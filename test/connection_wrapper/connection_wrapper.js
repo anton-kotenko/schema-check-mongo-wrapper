@@ -4,7 +4,8 @@ var TestTools = require(__dirname + '/../tools/tools.js'),
     Vow = require('vow'),
     Domain = require('domain'),
     assert = require('assert'),
-    MongoWrapper = require(__dirname + '/../../');
+    MongoWrapper = require(__dirname + '/../../'),
+    ConnectionConfigProvider = MongoWrapper.ConnectionConfigProvider;
 
 describe('ConnectionWrapper', function () {
     it('should exists', function () {
@@ -14,9 +15,7 @@ describe('ConnectionWrapper', function () {
         var mongoUrl = TestTools.getMongoUrl(),
             mongoOptions = TestTools.getMongoOptions(),
             instance = new MongoWrapper.ConnectionWrapper(mongoUrl, mongoOptions);
-
-        assert.strictEqual(instance._connectionUrl, mongoUrl);
-        assert.strictEqual(instance._connectionOptions, mongoOptions);
+        assert(instance._connectionConfig instanceof ConnectionConfigProvider);
         assert.strictEqual(instance._connectionPromise, undefined);
     });
     describe('#connect', function () {
