@@ -1,6 +1,6 @@
 /*global describe*/
 /*global it*/
-/*global after,beforeEach,afterEach*/
+/*global after,beforeEach*/
 var MongoWrapper = require(__dirname + '/../../'),
     SafeCollectionWrapper = MongoWrapper.SafeCollectionWrapper,
     CollectionWrapper = require(__dirname + '/../../lib/collection_wrapper.js'),
@@ -9,9 +9,11 @@ var MongoWrapper = require(__dirname + '/../../'),
     Vow = require('vow');
 
 describe('SafeCollectionWrapper', function () {
+
     it('should exists', function () {
         assert(SafeCollectionWrapper);
     });
+
     it('should be constructable', function () {
         var connection = TestTools.getConnection(),
             collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName());
@@ -21,140 +23,80 @@ describe('SafeCollectionWrapper', function () {
         assert.strictEqual(collection._collectionName, TestTools.getCollectionName());
     });
 
-    describe('#getDefaultEnforceValidaionPolicy,setDefaultEnforceValidationPolicy', function () {
-        beforeEach(function () {
-            SafeCollectionWrapper._enforceValidationPolicy = undefined;
-        });
-        it('should use false as default policy, if it was not changed', function () {
-            assert.strictEqual(false, SafeCollectionWrapper.getDefaultEnforceValidaionPolicy());
-        });
+    describe('#attachSchema', function () {
+        var collection = TestTools.getCollection();
 
-        it('should get default policy in from place, where it was stored by getDefaultEnforceValidaionPolicy',
-            function () {
-                SafeCollectionWrapper.setDefaultEnforceValidationPolicy(false);
-                assert.strictEqual(SafeCollectionWrapper.getDefaultEnforceValidaionPolicy(), false);
-
-                SafeCollectionWrapper.setDefaultEnforceValidationPolicy(true);
-                assert.strictEqual(SafeCollectionWrapper.getDefaultEnforceValidaionPolicy(), true);
-            }
-        );
-        after(function () {
-            SafeCollectionWrapper._enforceValidationPolicy = undefined;
-        });
-    });
-
-    describe('#getCollectionDecl,#declCollection', function () {
-        beforeEach(function () {
-            SafeCollectionWrapper._enforceValidationPolicy = undefined;
-            SafeCollectionWrapper._cache = undefined;
+        it('should return this', function () {
+            assert.strictEqual(collection, collection.attachSchema(TestTools.getSchema()));
         });
 
-        it('should return default policy for collections without declaration', function () {
-            SafeCollectionWrapper.setDefaultEnforceValidationPolicy(false);
-            assert.deepEqual(
-                {
-                    enforce: false
-                },
-                SafeCollectionWrapper.getCollectionDecl(TestTools.getCollectionName())
-            );
-            SafeCollectionWrapper.setDefaultEnforceValidationPolicy(true);
-            assert.deepEqual(
-                {
-                    enforce: true
-                },
-                SafeCollectionWrapper.getCollectionDecl(TestTools.getCollectionName())
-            );
+        it('should store schema into _schema field', function () {
+            collection.attachSchema(TestTools.getSchema());
+            assert(collection._schema);
         });
 
-        it('should use default enforcement policy used at decl name as default', function () {
-            var schema = TestTools.getSchema();
-            SafeCollectionWrapper.setDefaultEnforceValidationPolicy(false);
-            SafeCollectionWrapper.declCollection('zzz', schema);
+        it('should transform attached schema to contain _id field', function () {
+            collection.attachSchema(TestTools.getSchema());
             assert.deepEqual(
-                {enforce: false, schema: schema},
-                SafeCollectionWrapper.getCollectionDecl('zzz')
+                collection._injectIdFieldIntoSchema(TestTools.getSchema()),
+                collection._schema
             );
-            SafeCollectionWrapper.setDefaultEnforceValidationPolicy(true);
-            assert.deepEqual(
-                {enforce: false, schema: schema},
-                SafeCollectionWrapper.getCollectionDecl('zzz')
-            );
-
-            SafeCollectionWrapper.declCollection('aaa', schema);
-            assert.deepEqual(
-                {enforce: true, schema: schema},
-                SafeCollectionWrapper.getCollectionDecl('aaa')
-            );
-
-            SafeCollectionWrapper.setDefaultEnforceValidationPolicy(false);
-            assert.deepEqual(
-                {enforce: true, schema: schema},
-                SafeCollectionWrapper.getCollectionDecl('aaa')
-            );
-        });
-
-        it('should store/fetch schema and policy', function () {
-            var propertyField = {
-                    '_id': {
-                        type: 'string',
-                        patter: '^[0-9a-f]{24}$'
-                    }
-                },
-                schema1 = {title: 'test1', type: 'object', properties: propertyField},
-                schema2 = {title: 'test2', type: 'object', properties: propertyField},
-                schema3 = {title: 'test3', type: 'object', properties: propertyField},
-                schema4 = {title: 'test4', type: 'object', properties: propertyField};
-
-            SafeCollectionWrapper.declCollection('coll1', schema1, true);
-            assert.deepEqual(
-                {enforce: true, schema: schema1},
-                SafeCollectionWrapper.getCollectionDecl('coll1')
-            );
-
-            SafeCollectionWrapper.declCollection('coll2', schema2, false);
-            assert.deepEqual(
-                {enforce: false, schema: schema2},
-                SafeCollectionWrapper.getCollectionDecl('coll2')
-            );
-
-            SafeCollectionWrapper.declCollection('coll3', schema3, true);
-            assert.deepEqual(
-                {enforce: true, schema: schema3},
-                SafeCollectionWrapper.getCollectionDecl('coll3')
-            );
-
-            SafeCollectionWrapper.declCollection('coll4', schema4, false);
-            assert.deepEqual(
-                {enforce: false, schema: schema4},
-                SafeCollectionWrapper.getCollectionDecl('coll4')
-            );
-
-        });
-
-        afterEach(function () {
-            SafeCollectionWrapper._enforceValidationPolicy = undefined;
-            SafeCollectionWrapper._cache = undefined;
         });
     });
 
-    describe('#validateDoc', function () {
-        beforeEach(function () {
-            SafeCollectionWrapper._enforceValidationPolicy = undefined;
-            SafeCollectionWrapper._cache = undefined;
+    describe('#setCheckEnforcement', function () {
+        var collection = TestTools.getCollection();
+        it('should return this', function () {
+            assert.strictEqual(collection, collection.setCheckEnforcement());
+            assert.strictEqual(collection, collection.setCheckEnforcement(true));
+            assert.strictEqual(collection, collection.setCheckEnforcement(false));
         });
+        it('should set _enforceChecks field', function () {
+            collection.setCheckEnforcement(false);
+            assert.equal(collection._enforceChecks, false);
+            collection.setCheckEnforcement();
+            assert.equal(collection._enforceChecks, false);
+            collection.setCheckEnforcement(true);
+            assert.equal(collection._enforceChecks, true);
+            collection.setCheckEnforcement('zzz');
+            assert.equal(collection._enforceChecks, true);
+        });
+    });
 
+    describe('#validateWithDefaultSchema', function () {
         it('should fail if no schema but enforcement is enabled', function (done) {
             var connection = TestTools.getConnection(),
                 collection = new SafeCollectionWrapper(connection, 'zzz');
 
-            SafeCollectionWrapper.setDefaultEnforceValidationPolicy(true);
-            collection.validateDoc({}).always(function (promise) {
+            collection
+                .setCheckEnforcement(true);
+
+            collection.validateWithDefaultSchema({}).always(function (promise) {
                 if (promise.isRejected()) {
                     done();
                 } else {
                     done(new Error());
                 }
             });
+        });
+
+        it('should not validate document if enforcement is disabled', function (done) {
+            var connection = TestTools.getConnection(),
+                collection = new SafeCollectionWrapper(connection, 'zzz');
+
+            collection
+                .attachSchema(TestTools.getSchema())
+                .setCheckEnforcement(false);
+
+            collection.validateWithDefaultSchema({})
+                .always(function (promise) {
+                    assert(promise.isFulfilled());
+                    return collection.validateWithDefaultSchema({a: 'zzz', b: 1});
+                })
+                .always(function (promise) {
+                    assert(promise.isFulfilled());
+                    done(promise.isRejected() ? promise.valueOf() : undefined);
+                });
         });
 
         it('should validate correct document', function (done) {
@@ -162,12 +104,11 @@ describe('SafeCollectionWrapper', function () {
                 collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
                 document = {a: 'zzz', b: 123};
 
-            SafeCollectionWrapper.declCollection(
-                TestTools.getCollectionName(),
-                TestTools.getSchema(),
-                true
-            );
-            collection.validateDoc(document)
+            collection
+                .attachSchema(TestTools.getSchema())
+                .setCheckEnforcement(true);
+
+            collection.validateWithDefaultSchema(document)
                 .then(function (result) {
                     assert.deepEqual(result, document);
                     done();
@@ -175,17 +116,17 @@ describe('SafeCollectionWrapper', function () {
                 .fail(done);
 
         });
+
         it('should not validate incorrect document', function (done) {
             var connection = TestTools.getConnection(),
                 collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
                 document = {a: 'zzz', b: 'zzz'};
 
-            SafeCollectionWrapper.declCollection(
-                TestTools.getCollectionName(),
-                TestTools.getSchema(),
-                true
-            );
-            collection.validateDoc(document).always(function (promise) {
+            collection
+                .attachSchema(TestTools.getSchema())
+                .setCheckEnforcement(true);
+
+            collection.validateWithDefaultSchema(document).always(function (promise) {
                 if (promise.isRejected()) {
                     done();
                 } else {
@@ -194,29 +135,52 @@ describe('SafeCollectionWrapper', function () {
             });
 
         });
+    });
 
-        after(function () {
-            SafeCollectionWrapper._enforceValidationPolicy = undefined;
-            SafeCollectionWrapper._cache = undefined;
+    describe('#validate', function () {
+        it('should not validate incorrect documents', function (done) {
+            var connection = TestTools.getConnection(),
+                collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
+                document = {a: 'zzz', b: 'zzz'};
+
+            collection.validate(document, TestTools.getSchema())
+                .always(function (promise) {
+                    if (promise.isRejected()) {
+                        done();
+                    } else {
+                        done(new Error());
+                    }
+                });
+        });
+
+        it('should validate correct document', function (done) {
+            var connection = TestTools.getConnection(),
+                collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
+                document = {a: 'zzz', b: 5};
+
+            collection.validate(document, TestTools.getSchema())
+                .always(function (promise) {
+                    if (promise.isFulfilled()) {
+                        assert.strictEqual(promise.valueOf(), document);
+                        done();
+                    } else {
+                        done(promise.valueOf());
+                    }
+                }).fail(done);
         });
     });
 
-    describe('#safeInsert', function () {
-        beforeEach(function () {
-            SafeCollectionWrapper._enforceValidationPolicy = undefined;
-            SafeCollectionWrapper._cache = undefined;
-        });
+    describe('#insert', function () {
         it('should insert correct document', function (done) {
             var connection = TestTools.getConnection(),
                 collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
                 document = {a: 'zzz', b: 1234, _id: MongoWrapper.ObjectID()};
 
-            SafeCollectionWrapper.declCollection(
-                TestTools.getCollectionName(),
-                TestTools.getSchema(),
-                true
-            );
-            collection.safeInsert(document)
+            collection
+                .attachSchema(TestTools.getSchema())
+                .setCheckEnforcement(true);
+
+            collection.insert(document)
                 .then(function (result) {
                     assert(result instanceof Array);
                     assert.strictEqual(result.length, 1);
@@ -237,12 +201,11 @@ describe('SafeCollectionWrapper', function () {
                 collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
                 document = {a: 'zzz', b: '1234', _id: MongoWrapper.ObjectID()};
 
-            SafeCollectionWrapper.declCollection(
-                TestTools.getCollectionName(),
-                TestTools.getSchema(),
-                true
-            );
-            collection.safeInsert(document)
+            collection
+                .attachSchema(TestTools.getSchema())
+                .setCheckEnforcement(true);
+
+            collection.insert(document)
                 .always(function (promise) {
                     if (promise.isFulfilled()) {
                         done(new Error());
@@ -256,30 +219,26 @@ describe('SafeCollectionWrapper', function () {
                     done();
                 });
         });
-
-        after(function () {
-            SafeCollectionWrapper._enforceValidationPolicy = undefined;
-            SafeCollectionWrapper._cache = undefined;
-        });
-
     });
 
-    describe('#safeSave', function () {
-        beforeEach(function () {
-            SafeCollectionWrapper._enforceValidationPolicy = undefined;
-            SafeCollectionWrapper._cache = undefined;
+    describe('#unsafeInsert', function () {
+        it('shoud be the same as CollectionWrapper.insert', function () {
+            var collection = TestTools.getCollection();
+            assert.strictEqual(collection.unsafeInsert, CollectionWrapper.prototype.insert);
         });
+    });
+
+    describe('#save', function () {
         it('should insert correct document', function (done) {
             var connection = TestTools.getConnection(),
                 collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
                 document = {a: 'zzz', b: 1234, _id: MongoWrapper.ObjectID()};
 
-            SafeCollectionWrapper.declCollection(
-                TestTools.getCollectionName(),
-                TestTools.getSchema(),
-                true
-            );
-            collection.safeSave(document)
+            collection
+                .attachSchema(TestTools.getSchema())
+                .setCheckEnforcement(true);
+
+            collection.save(document)
                 .then(function (result) {
                     assert.strictEqual(result, 1);
                     return collection.find({_id: document._id}).toArray();
@@ -298,12 +257,11 @@ describe('SafeCollectionWrapper', function () {
                 collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
                 document = {a: 'zzz', b: '1234', _id: MongoWrapper.ObjectID()};
 
-            SafeCollectionWrapper.declCollection(
-                TestTools.getCollectionName(),
-                TestTools.getSchema(),
-                true
-            );
-            collection.safeSave(document)
+            collection
+                .attachSchema(TestTools.getSchema())
+                .setCheckEnforcement(true);
+
+            collection.save(document)
                 .always(function (promise) {
                     if (promise.isFulfilled()) {
                         done(new Error());
@@ -317,33 +275,32 @@ describe('SafeCollectionWrapper', function () {
                     done();
                 });
         });
-
-        after(function () {
-            SafeCollectionWrapper._enforceValidationPolicy = undefined;
-            SafeCollectionWrapper._cache = undefined;
-        });
-
     });
 
-    describe('#safeUpdate', function () {
+    describe('#unsafeSave', function () {
+        it('shoud be the same as CollectionWrapper.save', function () {
+            var collection = TestTools.getCollection();
+            assert.strictEqual(collection.unsafeSave, CollectionWrapper.prototype.save);
+        });
+    });
+
+    describe('#update', function () {
         beforeEach(function (done) {
-            SafeCollectionWrapper._enforceValidationPolicy = undefined;
-            SafeCollectionWrapper._cache = undefined;
-            SafeCollectionWrapper.declCollection(
-                TestTools.getCollectionName(),
-                TestTools.getSchema(),
-                true
-            );
-            TestTools.getCollection().drop().always(function () {
-                done();
-            });
+            TestTools.getCollection().drop()
+                .always(function () {
+                    done();
+                });
         });
 
         it('should do nothing if nothing to update and no upsert option', function (done) {
             var connection = TestTools.getConnection(),
                 collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName());
 
-            collection.safeUpdate({_id: 123}, {has: 'no meaning'})
+            collection
+                .attachSchema(TestTools.getSchema())
+                .setCheckEnforcement(true);
+
+            collection.update({_id: 123}, {has: 'no meaning'})
                 .then(function (result) {
                     assert.strictEqual(result, 0);
                     collection.count()
@@ -355,11 +312,16 @@ describe('SafeCollectionWrapper', function () {
                 })
                 .fail(done);
         });
+
         it('should insert correct document on upsert', function (done) {
             var connection = TestTools.getConnection(),
                 collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName());
 
-            collection.safeUpdate({_id: 123}, {a: 'zzz', b: 123}, {upsert: true})
+            collection
+                .attachSchema(TestTools.getSchema())
+                .setCheckEnforcement(true);
+
+            collection.update({_id: 123}, {a: 'zzz', b: 123}, {upsert: true})
                 .then(function (result) {
                     assert.strictEqual(result, 1);
                     collection.find().toArray()
@@ -374,11 +336,16 @@ describe('SafeCollectionWrapper', function () {
                 })
                 .fail(done);
         });
+
         it('should not upsert incorrect document', function (done) {
             var connection = TestTools.getConnection(),
                 collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName());
 
-            collection.safeUpdate({_id: 123}, {has: 'no meaning'}, {upsert: true})
+            collection
+                .attachSchema(TestTools.getSchema())
+                .setCheckEnforcement(true);
+
+            collection.update({_id: 123}, {has: 'no meaning'}, {upsert: true})
                 .then(function () {
                     done(new Error());
                 })
@@ -397,8 +364,12 @@ describe('SafeCollectionWrapper', function () {
                 collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
                 document = {_id: MongoWrapper.ObjectID(), a: 'zzz', b: 123};
 
-            collection.safeInsert(document).then(function () {
-                collection.safeUpdate({_id: document._id}, {$set: {b: 'qwerrty'}})
+            collection
+                .attachSchema(TestTools.getSchema())
+                .setCheckEnforcement(true);
+
+            collection.insert(document).then(function () {
+                collection.update({_id: document._id}, {$set: {b: 'qwerrty'}})
                     .then(function () {
                         done(new Error());
                     })
@@ -417,13 +388,18 @@ describe('SafeCollectionWrapper', function () {
             var connection = TestTools.getConnection(),
                 collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName());
 
-            collection.safeInsert({a: 'zzz', b: 123})
+            collection
+                .attachSchema(TestTools.getSchema())
+                .setCheckEnforcement(true);
+
+            collection.insert({a: 'zzz', b: 123})
                 .then(function () {
                     //intentionally insert bad document
-                    return collection.insert({a: 'zzz', b: 'qwertyu'});
+                    //FIXME use unsafe methods
+                    return collection.unsafeInsert({a: 'zzz', b: 'qwertyu'});
                 })
                 .then(function () {
-                    collection.safeUpdate({a: 'zzz'}, {$set: {a: 'asdf'}}, {multi: true})
+                    collection.update({a: 'zzz'}, {$set: {a: 'asdf'}}, {multi: true})
                         .then(function () {
                             done(new Error());
                         })
@@ -447,7 +423,11 @@ describe('SafeCollectionWrapper', function () {
                 var connection = TestTools.getConnection(),
                     collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName());
 
-                collection.safeUpdate({a: 'zzz'}, {$set: {b: 5}}, {upsert: true})
+                collection
+                    .attachSchema(TestTools.getSchema())
+                    .setCheckEnforcement(true);
+
+                collection.update({a: 'zzz'}, {$set: {b: 5}}, {upsert: true})
                     .then(function (count) {
                         assert.strictEqual(count, 1);
                         collection.count({a: 'zzz', b: 5})
@@ -459,6 +439,7 @@ describe('SafeCollectionWrapper', function () {
                     }).fail(done);
             }
         );
+
         it(
             'should not use value from query when building document for upserting if update ' +
             ' does not contain operators',
@@ -466,7 +447,11 @@ describe('SafeCollectionWrapper', function () {
                 var connection = TestTools.getConnection(),
                     collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName());
 
-                collection.safeUpdate({zzz: 'zzz'}, {a: 'qwerty', b: 5}, {upsert: true})
+                collection
+                    .attachSchema(TestTools.getSchema())
+                    .setCheckEnforcement(true);
+
+                collection.update({zzz: 'zzz'}, {a: 'qwerty', b: 5}, {upsert: true})
                     .then(function (count) {
                         assert.strictEqual(count, 1);
                         collection.count({a: 'qwerty', b: 5, zzz: {$exists: false}})
@@ -478,15 +463,94 @@ describe('SafeCollectionWrapper', function () {
                     }).fail(done);
             }
         );
+    });
 
+    describe('#unsafeUpdate', function () {
+        it('shoud be the same as CollectionWrapper.update', function () {
+            var collection = TestTools.getCollection();
+            assert.strictEqual(collection.unsafeUpdate, CollectionWrapper.prototype.update);
+        });
+    });
+
+
+    describe('#_copyObject', function () {
+        var collection = TestTools.getCollection(),
+            object = {a: {}, b: 1, c: 'zzz', d: []};
+
+        assert.deepEqual({}, collection._copyObject({}));
+        assert.deepEqual(object, collection._copyObject(object));
+        assert(object !== collection._copyObject(object));
+    });
+
+    describe('#_injectIdFieldIntoSchema', function () {
+        var collection = TestTools.getCollection();
+
+        it('should fail on incorrect schema', function () {
+            assert.throws(function () {
+                collection._injectIdFieldIntoSchema(undefined);
+            });
+            assert.throws(function () {
+                collection._injectIdFieldIntoSchema(null);
+            });
+            assert.throws(function () {
+                collection._injectIdFieldIntoSchema({});
+            });
+            assert.throws(function () {
+                collection._injectIdFieldIntoSchema({type: 'zzz'});
+            });
+        });
+
+        it('should add _id into properties', function () {
+            assert.deepEqual(
+                {
+                    type: 'object',
+                    properties: {
+                        _id: {
+                            type: 'string',
+                            pattern: '^[0-9a-f]{24}$'
+                        }
+                    }
+                },
+                collection._injectIdFieldIntoSchema({
+                    type: 'object'
+                })
+            );
+            assert.deepEqual(
+                {
+                    type: 'object',
+                    name: 'Some schema',
+                    properties: {
+                        zzz: {
+                            type: 'object'
+                        },
+                        _id: {
+                            type: 'string',
+                            pattern: '^[0-9a-f]{24}$'
+                        }
+                    },
+                    require: ['zzz'],
+                    additionalProperties: false
+                },
+                collection._injectIdFieldIntoSchema({
+                    type: 'object',
+                    name: 'Some schema',
+                    properties: {
+                        zzz: {
+                            type: 'object'
+                        }
+                    },
+                    require: ['zzz'],
+                    additionalProperties: false
+                })
+            );
+        });
     });
 
     after(function (done) {
-        SafeCollectionWrapper._enforceValidationPolicy = undefined;
-        SafeCollectionWrapper._cache = undefined;
-        TestTools.getCollection().drop().always(function () {
-            done();
-        });
+        TestTools.getCollection().drop()
+            .always(function () {
+                done();
+            });
     });
 
 });
