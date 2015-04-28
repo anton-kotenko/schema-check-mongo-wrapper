@@ -44,6 +44,23 @@ describe('SafeCollectionWrapper', function () {
         });
     });
 
+    describe('#warnOnWrongData', function () {
+        var collection = TestTools.getCollection();
+
+        it('should return this', function () {
+            assert.strictEqual(collection, collection.warnOnWrongData(true));
+            assert.strictEqual(collection, collection.warnOnWrongData(false));
+        });
+
+        it('should update _warningsEnabled field', function () {
+            collection.warnOnWrongData(true);
+            assert.strictEqual(collection._warningsEnabled, true);
+            collection.warnOnWrongData(false);
+            assert.strictEqual(collection._warningsEnabled, false);
+        });
+
+    });
+
     describe('#setCheckEnforcement', function () {
         var collection = TestTools.getCollection();
         it('should return this', function () {
@@ -114,7 +131,6 @@ describe('SafeCollectionWrapper', function () {
                     done();
                 })
                 .fail(done);
-
         });
 
         it('should not validate incorrect document', function (done) {
@@ -133,7 +149,29 @@ describe('SafeCollectionWrapper', function () {
                     done(new Error());
                 }
             });
+        });
 
+        it('should write warnings to console if warnings are enabled', function (done) {
+            var connection = TestTools.getConnection(),
+                collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
+                document = {a: 'zzz', b: 'zzz'},
+                consoleLogOriginal = console.log,
+                warningWrittenFlag = false;
+
+            console.log = function () {
+                warningWrittenFlag = true;
+                return consoleLogOriginal.apply(this, arguments);
+            };
+
+            collection
+                .attachSchema(TestTools.getSchema())
+                .warnOnWrongData(true);
+
+            collection.validateWithDefaultSchema(document).always(function () {
+                console.log = consoleLogOriginal;
+                assert(warningWrittenFlag);
+                done();
+            });
         });
     });
 
@@ -146,6 +184,7 @@ describe('SafeCollectionWrapper', function () {
             collection.validate(document, TestTools.getSchema())
                 .always(function (promise) {
                     if (promise.isRejected()) {
+                        assert(promise.valueOf() instanceof Error);
                         done();
                     } else {
                         done(new Error());
@@ -471,7 +510,6 @@ describe('SafeCollectionWrapper', function () {
             assert.strictEqual(collection.unsafeUpdate, CollectionWrapper.prototype.update);
         });
     });
-
 
     describe('#_copyObject', function () {
         var collection = TestTools.getCollection(),
