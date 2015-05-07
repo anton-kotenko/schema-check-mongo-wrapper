@@ -1,0 +1,3 @@
+#!/bin/bash
+node_modules/.bin/jshint --config=./.jshintrc lib/*.js index.js  test/*/*.js
+node_modules/.bin/jscs --config=./.jscsrc lib/*.js index.js test/*/*.js
