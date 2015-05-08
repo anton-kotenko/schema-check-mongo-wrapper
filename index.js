@@ -1,3 +1,6 @@
+/**
+ * @typedef {Object} MongoDocument
+ */
 var MongoDb = require('mongodb'),
     ConnectionWrapper = require(__dirname + '/lib/connection_wrapper.js'),
     SafeCollectionWrapper = require(__dirname + '/lib/safe_collection.js'),
