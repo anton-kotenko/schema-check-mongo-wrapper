@@ -569,7 +569,7 @@ describe('MongoUpdate', function () {
 
     });
 
-    describe('#setOnInsert', function () {
+    describe('#$setOnInsert', function () {
         it('should exits', function () {
             var update = new MongoUpdate({});
             assert(update._operatorMethods.$setOnInsert && (update._operatorMethods.$setOnInsert instanceof Function));
@@ -613,7 +613,7 @@ describe('MongoUpdate', function () {
 
     });
 
-    describe('#inc', function () {
+    describe('#$inc', function () {
         it('should exits', function () {
             var update = new MongoUpdate({});
             assert(update._operatorMethods.$inc && (update._operatorMethods.$inc instanceof Function));
@@ -692,7 +692,7 @@ describe('MongoUpdate', function () {
 
     });
 
-    describe('#mul', function () {
+    describe('#$mul', function () {
         it('should exits', function () {
             var update = new MongoUpdate({});
             assert(update._operatorMethods.$mul && (update._operatorMethods.$mul instanceof Function));
@@ -765,6 +765,119 @@ describe('MongoUpdate', function () {
 
             $mul('b', [], document);
             assert.strictEqual(document.b, 0);
+        });
+    });
+
+    describe('#$pull', function () {
+        it('should exits', function () {
+            var update = new MongoUpdate({});
+            assert(update._operatorMethods.$pull && (update._operatorMethods.$pull instanceof Function));
+        });
+
+        it('should do nothing if field to update is missing', function () {
+            var update = new MongoUpdate({}),
+                document = {a: 256, b: [], c: '', d: {}};
+
+            assert.strictEqual(document, update._operatorMethods.$pull.call(update, 'zzz', 123, document));
+            assert.strictEqual(undefined, document.zzz);
+            assert.strictEqual(document, update._operatorMethods.$pull.call(update, 'a.zzz', 123, document));
+            assert.strictEqual(256, document.a);
+            assert.strictEqual(document, update._operatorMethods.$pull.call(update, 'b.zzz', 123, document));
+            assert.deepEqual([], document.b);
+            assert.strictEqual(document, update._operatorMethods.$pull.call(update, 'd.zzz', 123, document));
+            assert.deepEqual({}, document.d);
+
+            assert.deepEqual(document, {a: 256, b: [], c: '', d: {}});
+        });
+
+        it('should remove all matched items', function () {
+            var update = new MongoUpdate({});
+            assert.deepEqual(
+                {a: [1, 2, 4, 5, 4, 6]},
+                update._operatorMethods.$pull.call(update, 'a', 3, {a: [1, 2, 3, 3, 4, 5, 4, 6]}
+            ));
+
+            assert.deepEqual(
+                {a: [1, 2, 3, 3]},
+                update._operatorMethods.$pull.call(update, 'a', {$gt: 3}, {a: [1, 2, 3, 3, 4, 5, 4, 6]}
+            ));
+
+        });
+
+        it('should not change array, if there are no matched elements', function () {
+            var update = new MongoUpdate({});
+            assert.deepEqual(
+                {a: [1, 2, 3, 3, 4, 5, 4, 6]},
+                update._operatorMethods.$pull.call(update, 'a', 7, {a: [1, 2, 3, 3, 4, 5, 4, 6]}
+            ));
+        });
+
+        it('shoud not change empty array', function () {
+            var update = new MongoUpdate({});
+            assert.deepEqual(
+                {a: []},
+                update._operatorMethods.$pull.call(update, 'a', 3, {a: []}
+            ));
+        });
+
+        it('should not remove array as whole after last element is removed', function () {
+            var update = new MongoUpdate({});
+            assert.deepEqual(
+                {a: []},
+                update._operatorMethods.$pull.call(update, 'a', 3, {a: [3]}
+            ));
+            assert.deepEqual(
+                {a: []},
+                update._operatorMethods.$pull.call(update, 'a', 3, {a: [3, 3, 3]}
+            ));
+        });
+
+    });
+
+    describe('#$addToSet', function () {
+        it('should exits', function () {
+            var update = new MongoUpdate({});
+            assert(update._operatorMethods.$addToSet && (update._operatorMethods.$addToSet instanceof Function));
+        });
+
+        it('should add element to array', function () {
+            var update = new MongoUpdate({}),
+                document = {a: 256, b: [], c: '', d: {}};
+            assert.strictEqual(document, update._operatorMethods.$addToSet.call(update, 'b', 123, document));
+            assert.deepEqual(document, {a: 256, b: [123], c: '', d: {}});
+        });
+
+        it('should create empty array for field if it is missing', function () {
+            var update = new MongoUpdate({}),
+                document = {a: 256, b: [], c: '', d: {}};
+
+            assert.strictEqual(document, update._operatorMethods.$addToSet.call(update, 'zzz', 123, document));
+            assert.deepEqual([123], document.zzz);
+            assert.strictEqual(document, update._operatorMethods.$addToSet.call(update, 'a.zzz', 555, document));
+            assert.deepEqual({zzz: [555]}, document.a);
+            assert.strictEqual(document, update._operatorMethods.$addToSet.call(update, 'b.zzz', 123, document));
+            assert.deepEqual({zzz: [123]}, document.b);
+            assert.strictEqual(document, update._operatorMethods.$addToSet.call(update, 'd.zzz', {}, document));
+            assert.deepEqual({zzz: [{}]}, document.d);
+
+            assert.deepEqual(
+                document,
+                {
+                    zzz: [123],
+                    a: {zzz: [555]},
+                    b: {zzz: [123]},
+                    c: '',
+                    d: {zzz: [{}]}
+                }
+            );
+        });
+
+        it('should not add element, if such element already exists', function () {
+            var update = new MongoUpdate({});
+            assert.deepEqual(
+                {a: [1, 2, 3, 3, 4, 5, 4, 6]},
+                update._operatorMethods.$addToSet.call(update, 'a', 6, {a: [1, 2, 3, 3, 4, 5, 4, 6]}
+            ));
         });
 
     });
