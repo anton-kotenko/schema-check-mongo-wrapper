@@ -21,14 +21,36 @@ Library api is implemented in next classes
 * CursorWrapper
 
 ###ConnectionWrapper
-ConnectionWrapper class is analog of native mongo driver's [Db](http://mongodb.github.io/node-mongodb-native/1.4/api-generated/db.html) class, but also hides in itself code required to connect to database server.
+ConnectionWrapper class is analog of native mongo driver's [Db](http://mongodb.github.io/node-mongodb-native/1.4/api-generated/db.html) class, but also hides in itself code required to connect to database server. Api
+* ConnectionWrapper (url, connectionOptions) constructor
+* collection (collectionName)
+
+```javascript
+var MongoWrapper = require('./mongo-wrapper'),
+   connection = new MongoWrapper.ConnectionWrapper("mongodb://localhost:27017/testdb"),
+   collection = connection.collection("myCollection");
+```
+
+
 
 ###SafeCollectionWrapper
 
-SafeCollectionWrapper is analog of native drivers [Collection](http://mongodb.github.io/node-mongodb-native/1.4/api-generated/collection.html) class, but methods save, insert and update methods, has posibility of checks if inserted/updated data is valid using json schema attached to collection
+SafeCollectionWrapper is analog of native drivers [Collection](http://mongodb.github.io/node-mongodb-native/1.4/api-generated/collection.html) class, but methods save, insert and update methods, has posibility of checks if inserted/updated data is valid using json schema attached to collection.
+Provides a lot of methods from mongo native driver, with almost same interface. Most notable change is transformation from callback style into promise style
+
+* find (condition) returns promise to CursorWrapper
+* count (condition) returns promise to Number
+* insert (document, options) returns promise to inserted document
+* update (condition, update, options) return promise to updated documents count
+* remove (condition)
 
 ###CursorWrapper
 CursorWrapper wraps [Cursor](http://mongodb.github.io/node-mongodb-native/1.4/api-generated/cursor.html) class.
+Implements almost same interface as original cursor, except callback style functions are replaced with promise style
+
+* toArray() returns promise to document array 
+* sort (diretion) returns same cursor
+* limit (count) returns same cursor
 
 
 ##Examples
@@ -38,7 +60,7 @@ CursorWrapper wraps [Cursor](http://mongodb.github.io/node-mongodb-native/1.4/ap
 Simple example: connect to database server and run some commands on collection
 ```javascript
 var MongoWrapper = require('./mongo-wrapper'),
-    connection = new MongoWrapper.ConnectionWrapper("mongodb://localhost:27017/testdb");
+    connection = new MongoWrapper.ConnectionWrapper("mongodb://localhost:27017/testdb"),
     collection = connection.collection("myCollection");
 
 collection.insert({field: 123})
@@ -71,7 +93,7 @@ collection.insert({field: 123})
 Example how to store data in mongo's collection with validation
 ```javascript
 var MongoWrapper = require('./mongo-wrapper'),                                                        
-    connection = new MongoWrapper.ConnectionWrapper("mongodb://localhost:27017/testdb");              
+    connection = new MongoWrapper.ConnectionWrapper("mongodb://localhost:27017/testdb"),           
     collection = connection.collection("myCollection");                                               
     //declare schema for object with two fields a (string) and b (integer),
     //both required, and disallow any other fields
