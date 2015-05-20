@@ -19,6 +19,7 @@ Library api is implemented in next classes
 * Connection
 * SafeCollection
 * CursorWrapper
+* SchemaStorage
 
 ###Connection
 Connection class is analog of native mongo driver's [Db](http://mongodb.github.io/node-mongodb-native/1.4/api-generated/db.html) class, but also hides in itself code required to connect to database server. Api
@@ -52,6 +53,14 @@ Implements almost same interface as original cursor, except callback style funct
 * sort (diretion) returns same cursor
 * limit (count) returns same cursor
 
+###SchemaStorage
+SchemaStorage provides way to define schemas by url, that is usefull when building complex schemas from
+set of simple [Example](http://spacetelescope.github.io/understanding-json-schema/structuring.html)
+
+Has next interface
+
+* addSchema (url, schema)
+* getSchema (url)
 
 ##Examples
 
@@ -118,6 +127,8 @@ collection
     .attachSchema(schema) //attach schema to collection. this schema will be used to verify documents on change
     .warnOnWrongData(true) //write messeges on console when "bad" document is processes
     .setCheckEnforcement(true); //disallow to insert documents, that mismatches schema
+//or fetch collection with next code
+//var collection = connection.collection('myCollection', schema, {warnOnWrongData: true, enforceChecks: true})
 
 //{field: 123} obviously does not match schema, insert should fail
 collection.insert({field: 123})
