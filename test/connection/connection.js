@@ -7,14 +7,14 @@ var TestTools = require(__dirname + '/../tools/tools.js'),
     MongoWrapper = require(__dirname + '/../../'),
     ConnectionConfigProvider = MongoWrapper.ConnectionConfigProvider;
 
-describe('ConnectionWrapper', function () {
+describe('Connection', function () {
     it('should exists', function () {
-        assert(MongoWrapper.ConnectionWrapper instanceof Object);
+        assert(MongoWrapper.Connection instanceof Object);
     });
     it('should be constructable', function () {
         var mongoUrl = TestTools.getMongoUrl(),
             mongoOptions = TestTools.getMongoOptions(),
-            instance = new MongoWrapper.ConnectionWrapper(mongoUrl, mongoOptions);
+            instance = new MongoWrapper.Connection(mongoUrl, mongoOptions);
         assert(instance._connectionConfig instanceof ConnectionConfigProvider);
         assert.strictEqual(instance._connectionPromise, undefined);
     });
@@ -68,7 +68,48 @@ describe('ConnectionWrapper', function () {
     describe('#collection', function () {
         it('should return CollectionWrapper', function () {
             var collection = TestTools.getConnection().collection('zzz');
-            assert(collection instanceof MongoWrapper.SafeCollectionWrapper);
+            assert(collection instanceof MongoWrapper.SafeCollection);
+        });
+        it('should pass schema and validation options arguments to collection constructor', function () {
+            var collection = TestTools.getConnection().collection(
+                TestTools.getCollectionName(),
+                TestTools.getSchema()
+            );
+            assert(collection._schema);
+            assert.strictEqual(collection._enforceChecks, true);
+            assert.strictEqual(collection._warningsEnabled, false);
+
+            collection = TestTools.getConnection().collection(
+                TestTools.getCollectionName(),
+                TestTools.getSchema(),
+                {}
+            );
+            assert(collection._schema);
+            assert.strictEqual(collection._enforceChecks, true);
+            assert.strictEqual(collection._warningsEnabled, false);
+
+            collection = TestTools.getConnection().collection(
+                TestTools.getCollectionName(),
+                TestTools.getSchema(),
+                {
+                    enforceChecks: false 
+                }
+            );
+            assert(collection._schema);
+            assert.strictEqual(collection._enforceChecks, false);
+            assert.strictEqual(collection._warningsEnabled, false);
+
+            collection = TestTools.getConnection().collection(
+                TestTools.getCollectionName(),
+                TestTools.getSchema(),
+                {
+                    enforceChecks: false,
+                    warnOnWrongData: true
+                }
+            );
+            assert(collection._schema);
+            assert.strictEqual(collection._enforceChecks, false);
+            assert.strictEqual(collection._warningsEnabled, true);
         });
     });
     describe('#nativeCollection', function () {
@@ -100,22 +141,22 @@ describe('ConnectionWrapper', function () {
         });
     });
 });
-describe('ConnectionWrapper#get', function () {
+describe('Connection#get', function () {
     it('should create instance of connection wrapper', function () {
-        var instance = MongoWrapper.ConnectionWrapper.get(TestTools.getMongoUrl(), TestTools.getMongoOptions());
-        assert(instance instanceof MongoWrapper.ConnectionWrapper);
+        var instance = MongoWrapper.Connection.get(TestTools.getMongoUrl(), TestTools.getMongoOptions());
+        assert(instance instanceof MongoWrapper.Connection);
     });
     it('should be cached', function () {
-        var instance1 = MongoWrapper.ConnectionWrapper.get(TestTools.getMongoUrl(), TestTools.getMongoOptions()),
-            instance2 = MongoWrapper.ConnectionWrapper.get(TestTools.getMongoUrl(), TestTools.getMongoOptions());
+        var instance1 = MongoWrapper.Connection.get(TestTools.getMongoUrl(), TestTools.getMongoOptions()),
+            instance2 = MongoWrapper.Connection.get(TestTools.getMongoUrl(), TestTools.getMongoOptions());
 
         assert.strictEqual(instance1, instance2);
     });
     it('should be cached per connection+options', function () {
-        var instance1 = MongoWrapper.ConnectionWrapper.get('mongodb://127.0.0.1:27017/test1', {}),
-            instance2 = MongoWrapper.ConnectionWrapper.get('mongodb://127.0.0.1:27017/test2', {}),
-            instance3 = MongoWrapper.ConnectionWrapper.get('mongodb://127.0.0.1:27017/test1', {server: {poolSize: 4}}),
-            instance4 = MongoWrapper.ConnectionWrapper.get('mongodb://127.0.0.1:27017/test2', {server: {poolSize: 4}});
+        var instance1 = MongoWrapper.Connection.get('mongodb://127.0.0.1:27017/test1', {}),
+            instance2 = MongoWrapper.Connection.get('mongodb://127.0.0.1:27017/test2', {}),
+            instance3 = MongoWrapper.Connection.get('mongodb://127.0.0.1:27017/test1', {server: {poolSize: 4}}),
+            instance4 = MongoWrapper.Connection.get('mongodb://127.0.0.1:27017/test2', {server: {poolSize: 4}});
         assert(instance1 !== instance2 && instance2 !== instance3 && instance3 !== instance4 &&
             instance2 !== instance4 && instance1 !== instance3 && instance1 !== instance4);
     });

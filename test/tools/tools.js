@@ -12,7 +12,7 @@ module.exports = {
         var mongoUrl = this.getMongoUrl(),
             mongoOptions = this.getMongoOptions();
 
-        return new MongoWrapper.ConnectionWrapper(mongoUrl, mongoOptions);
+        return new MongoWrapper.Connection(mongoUrl, mongoOptions);
     },
     getCollectionName: function () {
         return 'zzz';

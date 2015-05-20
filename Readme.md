@@ -8,7 +8,7 @@ Library interface is build to be as close as possible to [mongo shell](http://do
 ##Installation
 ```npm install git://github.com/anton-kotenko/mongo-wrapper.git ```
 
-or add 
+or add
 ```json
  "mongo-wrapper": "git://github.com/anton-kotenko/mongo-wrapper.git"
 ```
@@ -16,26 +16,26 @@ in package.json
 
 ##Api
 Library api is implemented in next classes
-* ConnectionWrapper
-* SafeCollectionWrapper
+* Connection
+* SafeCollection
 * CursorWrapper
 
-###ConnectionWrapper
-ConnectionWrapper class is analog of native mongo driver's [Db](http://mongodb.github.io/node-mongodb-native/1.4/api-generated/db.html) class, but also hides in itself code required to connect to database server. Api
-* ConnectionWrapper (url, connectionOptions) constructor
+###Connection
+Connection class is analog of native mongo driver's [Db](http://mongodb.github.io/node-mongodb-native/1.4/api-generated/db.html) class, but also hides in itself code required to connect to database server. Api
+* Connection (url, connectionOptions) constructor
 * collection (collectionName)
 
 ```javascript
 var MongoWrapper = require('./mongo-wrapper'),
-   connection = new MongoWrapper.ConnectionWrapper("mongodb://localhost:27017/testdb"),
+   connection = new MongoWrapper.Connection("mongodb://localhost:27017/testdb"),
    collection = connection.collection("myCollection");
 ```
 
 
 
-###SafeCollectionWrapper
+###SafeCollection
 
-SafeCollectionWrapper is analog of native drivers [Collection](http://mongodb.github.io/node-mongodb-native/1.4/api-generated/collection.html) class, but methods save, insert and update methods, has posibility of checks if inserted/updated data is valid using json schema attached to collection.
+SafeCollection is analog of native drivers [Collection](http://mongodb.github.io/node-mongodb-native/1.4/api-generated/collection.html) class, but methods save, insert and update methods, has posibility of checks if inserted/updated data is valid using json schema attached to collection.
 Provides a lot of methods from mongo native driver, with almost same interface. Most notable change is transformation from callback style into promise style
 
 * find (condition) returns promise to CursorWrapper
@@ -48,7 +48,7 @@ Provides a lot of methods from mongo native driver, with almost same interface. 
 CursorWrapper wraps [Cursor](http://mongodb.github.io/node-mongodb-native/1.4/api-generated/cursor.html) class.
 Implements almost same interface as original cursor, except callback style functions are replaced with promise style
 
-* toArray() returns promise to document array 
+* toArray() returns promise to document array
 * sort (diretion) returns same cursor
 * limit (count) returns same cursor
 
@@ -60,14 +60,14 @@ Implements almost same interface as original cursor, except callback style funct
 Simple example: connect to database server and run some commands on collection
 ```javascript
 var MongoWrapper = require('./mongo-wrapper'),
-    connection = new MongoWrapper.ConnectionWrapper("mongodb://localhost:27017/testdb"),
+    connection = new MongoWrapper.Connection("mongodb://localhost:27017/testdb"),
     collection = connection.collection("myCollection");
 
 collection.insert({field: 123})
     .then(function (insertedDoc) {
         console.log('Document', insertedDoc, 'was inserted in collection');
         return collection.count({field: 123});
-    }) 
+    })
     .then(function(docCount) {
         console.log('We have ', docCount, " documents that matches condition");
         return collection.update({field: 123}, {$set: {field: 543}});
@@ -85,65 +85,68 @@ collection.insert({field: 123})
     })
     .fail(function (err) {
         console.log("Something fails ", err);
-    });
+    })
+    .done();
+
 ```
 
 ### Example validate data
 
 Example how to store data in mongo's collection with validation
 ```javascript
-var MongoWrapper = require('./mongo-wrapper'),                                                        
-    connection = new MongoWrapper.ConnectionWrapper("mongodb://localhost:27017/testdb"),           
-    collection = connection.collection("myCollection");                                               
+var MongoWrapper = require('./mongo-wrapper'),
+    connection = new MongoWrapper.Connection("mongodb://localhost:27017/testdb"),
+    collection = connection.collection("myCollection");
     //declare schema for object with two fields a (string) and b (integer),
     //both required, and disallow any other fields
-    schema = {                                                                                        
-        name: 'Schema',                                                                               
-        type: 'object',                                                                               
-        properties: {                                                                                 
-            a: {                                                                                      
-                type: 'string'                                                                        
-            },                                                                                        
-            b: {                                                                                      
-                type: 'integer'                                                                       
-            }                                                                                         
-        },                                                                                            
-        required: ['a', 'b'],                                                                         
-        additionalProperties: false,                                                                  
-    };                                                                                                
-                                                                                                      
-collection                                                                                            
+    schema = {
+        name: 'Schema',
+        type: 'object',
+        properties: {
+            a: {
+                type: 'string'
+            },
+            b: {
+                type: 'integer'
+            }
+        },
+        required: ['a', 'b'],
+        additionalProperties: false,
+    };
+
+collection
     .attachSchema(schema) //attach schema to collection. this schema will be used to verify documents on change
     .warnOnWrongData(true) //write messeges on console when "bad" document is processes
-    .setCheckEnforcement(true); //disallow to insert documents, that mismatches schema                              
+    .setCheckEnforcement(true); //disallow to insert documents, that mismatches schema
 
 //{field: 123} obviously does not match schema, insert should fail
-collection.insert({field: 123})                                                                       
-    .fail(function (error) {                                      
-        console.log('Can not insert document, it does not match schema', error);                      
+collection.insert({field: 123})
+    .fail(function (error) {
+        console.log('Can not insert document, it does not match schema', error);
         //{a: 'zzz', b: 123} is good document, so insert works
-        return collection.insert({a: 'zzz', b: 123});                                                 
-    })                                                                                                
+        return collection.insert({a: 'zzz', b: 123});
+    })
     .then(function (insertedDoc) {
-        console.log('Document', insertedDoc, 'was inserted in collection');                           
+        console.log('Document', insertedDoc, 'was inserted in collection');
         //trying to add "field" field {$set: {field: 543}} => that's "bad" document,
         //update should fail
-        return collection.update({a: 'zzz', b: 123}, {$set: {field: 543}});                           
-    })                                                                                                
+        return collection.update({a: 'zzz', b: 123}, {$set: {field: 543}});
+    })
     .fail(function (error) {
-        console.log('Can not update document, it does not match schema', error);  
+        console.log('Can not update document, it does not match schema', error);
         //try to remove required field "a" {$unset: {a: ''}} => should fail
-        return collection.update({a: 'zzz', b: 123}, {$unset: {a: ''}});                              
-    })                                                                                                
-    .fail(function (error) {                                                                          
+        return collection.update({a: 'zzz', b: 123}, {$unset: {a: ''}});
+    })
+    .fail(function (error) {
         console.log('Can not update document, it does not match schema', error);
         //just change values of "a" and "b" fields. Should work
-        return collection.update({a: 'zzz', b: 123}, {a: 'qwerty', b: 5});                            
-    })                                                                                                
-    .then(function (updateCount) {                                                                    
-        console.log(updateCount, 'documents was updated');                                            
-    })                                                                                                
-    .fail(function (err) {                                                                            
-        console.log("Something fails ", err);                                                         
-    });                                                                                               
+        return collection.update({a: 'zzz', b: 123}, {a: 'qwerty', b: 5});
+    })
+    .then(function (updateCount) {
+        console.log(updateCount, 'documents was updated');
+    })
+    .fail(function (err) {
+        console.log("Something fails ", err);
+    })
+    .done();
 ```

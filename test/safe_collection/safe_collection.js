@@ -2,25 +2,68 @@
 /*global it*/
 /*global after,beforeEach*/
 var MongoWrapper = require(__dirname + '/../../'),
-    SafeCollectionWrapper = MongoWrapper.SafeCollectionWrapper,
+    SafeCollection = MongoWrapper.SafeCollection,
     CollectionWrapper = require(__dirname + '/../../lib/collection_wrapper.js'),
     TestTools = require(__dirname + '/../tools/tools.js'),
     assert = require('assert'),
     Vow = require('vow');
 
-describe('SafeCollectionWrapper', function () {
+describe('SafeCollection', function () {
 
     it('should exists', function () {
-        assert(SafeCollectionWrapper);
+        assert(SafeCollection);
     });
 
     it('should be constructable', function () {
         var connection = TestTools.getConnection(),
-            collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName());
+            collection = new SafeCollection(connection, TestTools.getCollectionName());
 
-        assert(collection instanceof SafeCollectionWrapper);
+        assert(collection instanceof SafeCollection);
         assert(collection instanceof CollectionWrapper);
         assert.strictEqual(collection._collectionName, TestTools.getCollectionName());
+
+        collection = new SafeCollection(connection, TestTools.getCollectionName(), TestTools.getSchema());
+        assert(collection._schema);
+        assert.strictEqual(collection._enforceChecks, true);
+        assert.strictEqual(collection._warningsEnabled, false);
+
+        collection = new SafeCollection(
+            connection,
+            TestTools.getCollectionName(),
+            TestTools.getSchema(),
+            {}
+        );
+
+        assert(collection._schema);
+        assert.strictEqual(collection._enforceChecks, true);
+        assert.strictEqual(collection._warningsEnabled, false);
+
+        collection = new SafeCollection(
+            connection,
+            TestTools.getCollectionName(),
+            TestTools.getSchema(),
+            {
+                enforceChecks: false 
+            }
+        );
+
+        assert(collection._schema);
+        assert.strictEqual(collection._enforceChecks, false);
+        assert.strictEqual(collection._warningsEnabled, false);
+
+        collection = new SafeCollection(
+            connection,
+            TestTools.getCollectionName(),
+            TestTools.getSchema(),
+            {
+                enforceChecks: false,
+                warnOnWrongData: true
+            }
+        );
+
+        assert(collection._schema);
+        assert.strictEqual(collection._enforceChecks, false);
+        assert.strictEqual(collection._warningsEnabled, true);
     });
 
     describe('#attachSchema', function () {
@@ -83,7 +126,7 @@ describe('SafeCollectionWrapper', function () {
     describe('#validateWithDefaultSchema', function () {
         it('should fail if no schema but enforcement is enabled', function (done) {
             var connection = TestTools.getConnection(),
-                collection = new SafeCollectionWrapper(connection, 'zzz');
+                collection = new SafeCollection(connection, 'zzz');
 
             collection
                 .setCheckEnforcement(true);
@@ -99,7 +142,7 @@ describe('SafeCollectionWrapper', function () {
 
         it('should not validate document if enforcement is disabled', function (done) {
             var connection = TestTools.getConnection(),
-                collection = new SafeCollectionWrapper(connection, 'zzz');
+                collection = new SafeCollection(connection, 'zzz');
 
             collection
                 .attachSchema(TestTools.getSchema())
@@ -118,7 +161,7 @@ describe('SafeCollectionWrapper', function () {
 
         it('should validate correct document', function (done) {
             var connection = TestTools.getConnection(),
-                collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
+                collection = new SafeCollection(connection, TestTools.getCollectionName()),
                 document = {a: 'zzz', b: 123};
 
             collection
@@ -135,7 +178,7 @@ describe('SafeCollectionWrapper', function () {
 
         it('should not validate incorrect document', function (done) {
             var connection = TestTools.getConnection(),
-                collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
+                collection = new SafeCollection(connection, TestTools.getCollectionName()),
                 document = {a: 'zzz', b: 'zzz'};
 
             collection
@@ -153,7 +196,7 @@ describe('SafeCollectionWrapper', function () {
 
         it('should write warnings to console if warnings are enabled', function (done) {
             var connection = TestTools.getConnection(),
-                collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
+                collection = new SafeCollection(connection, TestTools.getCollectionName()),
                 document = {a: 'zzz', b: 'zzz'},
                 consoleLogOriginal = console.log,
                 warningWrittenFlag = false;
@@ -178,7 +221,7 @@ describe('SafeCollectionWrapper', function () {
     describe('#validate', function () {
         it('should not validate incorrect documents', function (done) {
             var connection = TestTools.getConnection(),
-                collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
+                collection = new SafeCollection(connection, TestTools.getCollectionName()),
                 document = {a: 'zzz', b: 'zzz'};
 
             collection.validate(document, TestTools.getSchema())
@@ -194,7 +237,7 @@ describe('SafeCollectionWrapper', function () {
 
         it('should validate correct document', function (done) {
             var connection = TestTools.getConnection(),
-                collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
+                collection = new SafeCollection(connection, TestTools.getCollectionName()),
                 document = {a: 'zzz', b: 5};
 
             collection.validate(document, TestTools.getSchema())
@@ -212,7 +255,7 @@ describe('SafeCollectionWrapper', function () {
     describe('#insert', function () {
         it('should insert correct document', function (done) {
             var connection = TestTools.getConnection(),
-                collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
+                collection = new SafeCollection(connection, TestTools.getCollectionName()),
                 document = {a: 'zzz', b: 1234, _id: MongoWrapper.ObjectID()};
 
             collection
@@ -237,7 +280,7 @@ describe('SafeCollectionWrapper', function () {
 
         it('should not insert correct document', function (done) {
             var connection = TestTools.getConnection(),
-                collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
+                collection = new SafeCollection(connection, TestTools.getCollectionName()),
                 document = {a: 'zzz', b: '1234', _id: MongoWrapper.ObjectID()};
 
             collection
@@ -270,7 +313,7 @@ describe('SafeCollectionWrapper', function () {
     describe('#save', function () {
         it('should insert correct document', function (done) {
             var connection = TestTools.getConnection(),
-                collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
+                collection = new SafeCollection(connection, TestTools.getCollectionName()),
                 document = {a: 'zzz', b: 1234, _id: MongoWrapper.ObjectID()};
 
             collection
@@ -293,7 +336,7 @@ describe('SafeCollectionWrapper', function () {
 
         it('should not insert correct document', function (done) {
             var connection = TestTools.getConnection(),
-                collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
+                collection = new SafeCollection(connection, TestTools.getCollectionName()),
                 document = {a: 'zzz', b: '1234', _id: MongoWrapper.ObjectID()};
 
             collection
@@ -333,7 +376,7 @@ describe('SafeCollectionWrapper', function () {
 
         it('should do nothing if nothing to update and no upsert option', function (done) {
             var connection = TestTools.getConnection(),
-                collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName());
+                collection = new SafeCollection(connection, TestTools.getCollectionName());
 
             collection
                 .attachSchema(TestTools.getSchema())
@@ -354,7 +397,7 @@ describe('SafeCollectionWrapper', function () {
 
         it('should insert correct document on upsert', function (done) {
             var connection = TestTools.getConnection(),
-                collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName());
+                collection = new SafeCollection(connection, TestTools.getCollectionName());
 
             collection
                 .attachSchema(TestTools.getSchema())
@@ -378,7 +421,7 @@ describe('SafeCollectionWrapper', function () {
 
         it('should not upsert incorrect document', function (done) {
             var connection = TestTools.getConnection(),
-                collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName());
+                collection = new SafeCollection(connection, TestTools.getCollectionName());
 
             collection
                 .attachSchema(TestTools.getSchema())
@@ -400,7 +443,7 @@ describe('SafeCollectionWrapper', function () {
 
         it('should not update incorrect document', function (done) {
             var connection = TestTools.getConnection(),
-                collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName()),
+                collection = new SafeCollection(connection, TestTools.getCollectionName()),
                 document = {_id: MongoWrapper.ObjectID(), a: 'zzz', b: 123};
 
             collection
@@ -425,7 +468,7 @@ describe('SafeCollectionWrapper', function () {
 
         it('should not do nonthing if any of documents in multi mode is incorrect', function (done) {
             var connection = TestTools.getConnection(),
-                collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName());
+                collection = new SafeCollection(connection, TestTools.getCollectionName());
 
             collection
                 .attachSchema(TestTools.getSchema())
@@ -460,7 +503,7 @@ describe('SafeCollectionWrapper', function () {
                 ' contatins operators',
             function (done) {
                 var connection = TestTools.getConnection(),
-                    collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName());
+                    collection = new SafeCollection(connection, TestTools.getCollectionName());
 
                 collection
                     .attachSchema(TestTools.getSchema())
@@ -484,7 +527,7 @@ describe('SafeCollectionWrapper', function () {
             ' does not contain operators',
             function (done) {
                 var connection = TestTools.getConnection(),
-                    collection = new SafeCollectionWrapper(connection, TestTools.getCollectionName());
+                    collection = new SafeCollection(connection, TestTools.getCollectionName());
 
                 collection
                     .attachSchema(TestTools.getSchema())
