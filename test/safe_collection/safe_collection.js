@@ -6,6 +6,7 @@ var MongoWrapper = require(__dirname + '/../../'),
     CollectionWrapper = require(__dirname + '/../../lib/collection_wrapper.js'),
     TestTools = require(__dirname + '/../tools/tools.js'),
     assert = require('assert'),
+    TV4 = require('tv4'),
     Vow = require('vow');
 
 describe('SafeCollection', function () {
@@ -26,6 +27,11 @@ describe('SafeCollection', function () {
         assert(collection._schema);
         assert.strictEqual(collection._enforceChecks, true);
         assert.strictEqual(collection._warningsEnabled, false);
+    
+        MongoWrapper.SchemaStorage.addSchema('http://my.schema.uri', TestTools.getSchema());
+        collection = new SafeCollection(connection, TestTools.getCollectionName(), 'http://my.schema.uri');
+        assert(collection._schema);
+        TV4.dropSchemas();
 
         collection = new SafeCollection(
             connection,
@@ -84,6 +90,22 @@ describe('SafeCollection', function () {
                 collection._injectIdFieldIntoSchema(TestTools.getSchema()),
                 collection._schema
             );
+        });
+        it('should fail if argument is not object/string', function () {
+            assert.throws(function () {
+                collection.attachSchema();
+            });
+        });
+        it('should fail if argument is url and no schema defined for url', function () {
+            assert.throws(function () {
+                collection.attachSchema('http://url.for.missing.schema');
+            });
+        });
+        it('should attach schema by url', function () {
+            MongoWrapper.SchemaStorage.addSchema('http://schema.url', TestTools.getSchema());
+            collection.attachSchema('http://schema.url');
+            assert(collection._schema);
+            TV4.dropSchemas();
         });
     });
 
