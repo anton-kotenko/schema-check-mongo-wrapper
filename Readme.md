@@ -150,3 +150,80 @@ collection.insert({field: 123})
     })
     .done();
 ```
+
+### Example validate data using complex schemas
+
+```javascript
+var MongoWrapper = require('./mongo-wrapper'),
+    connection = new MongoWrapper.Connection("mongodb://localhost:27017/testdb"),
+    collection;
+
+MongoWrapper.SchemaStorage.addSchema(
+    'http://my.project/schemas/a',
+    {
+        type: 'string'
+    }
+);
+MongoWrapper.SchemaStorage.addSchema(
+    'http://my.project/schemas/b',
+    {
+        type: 'integer'
+    }
+);
+MongoWrapper.SchemaStorage.addSchema(
+    'http://my.project/schemas/full_schema',
+    {
+        name: 'Schema',
+        type: 'object',
+        properties: {
+            a: {
+                $ref: 'http://my.project/schemas/a'
+            },
+            b: {
+                $ref: 'http://my.project/schemas/b'
+            }
+        },
+        required: ['a', 'b'],
+        additionalProperties: false,
+    }
+);
+
+collection = connection.collection(
+    "myCollection",
+    "http://my.project/schemas/full_schema", //attach schema to collection. this schema will be used to verify documents on change
+    {warnOnWrongData: true} //write messeges on console when "bad" document is processes
+);
+
+//{field: 123} obviously does not match schema, insert should fail
+collection.insert({field: 123})
+    .fail(function (error) {
+        console.log('Can not insert document, it does not match schema', error);
+        //{a: 'zzz', b: 123} is good document, so insert works
+        return collection.insert({a: 'zzz', b: 123});
+    })
+    .then(function (insertedDoc) {
+        console.log('Document', insertedDoc, 'was inserted in collection');
+        //trying to add "field" field {$set: {field: 543}} => that's "bad" document,
+        //update should fail
+        return collection.update({a: 'zzz', b: 123}, {$set: {field: 543}});
+    })
+    .fail(function (error) {
+        console.log('Can not update document, it does not match schema', error);
+        //try to remove required field "a" {$unset: {a: ''}} => should fail
+        return collection.update({a: 'zzz', b: 123}, {$unset: {a: ''}});
+    })
+    .fail(function (error) {
+        console.log('Can not update document, it does not match schema', error);
+        //just change values of "a" and "b" fields. Should work
+        return collection.update({a: 'zzz', b: 123}, {a: 'qwerty', b: 5});
+    })
+    .then(function (updateCount) {
+        console.log(updateCount, 'documents was updated');
+    })
+    .fail(function (err) {
+        console.log("Something fails ", err);
+    })
+    .done();
+
+
+```
