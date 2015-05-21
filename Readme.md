@@ -3,7 +3,7 @@ Wrapper around [native mongodb javascript driver](https://github.com/mongodb/nod
 
 Library interface is build to be as close as possible to [mongo shell](http://docs.mongodb.org/master/reference/method/). All asyncronous code is hidden in library, except, actually operation on server and/or recieving data.
 
-<img src="https://travis-ci.org/anton-kotenko/mongo-wrapper.svg?branch=develop"/>
+<img src="https://travis-ci.org/anton-kotenko/mongo-wrapper.svg?branch=master"/>
 
 ##Installation
 ```npm install git://github.com/anton-kotenko/mongo-wrapper.git ```
