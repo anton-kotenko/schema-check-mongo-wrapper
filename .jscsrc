@@ -1,0 +1,194 @@
+{
+    // Copied from "preset": "yandex" whith our changes
+    // If in new jscs version preset will be changed - we still have our's
+
+    // Requires curly braces after statements. Array or Boolean
+    "requireCurlyBraces": [
+        "if",
+        "else",
+        "for",
+        "while",
+        "do",
+        "try",
+        "catch"
+    ],
+    // Requires space before keyword. Array or Boolean
+    "requireSpaceBeforeKeywords": [
+        "else",
+        "while",
+        "catch"
+    ],
+    // Requires space after keyword. Array or Boolean
+    "requireSpaceAfterKeywords": [
+        "if",
+        "else",
+        "for",
+        "while",
+        "do",
+        "switch",
+        "return",
+        "try",
+        "catch",
+        "function"
+    ],
+    // Requires space before block statements (for loops, control structures). Boolean
+    "requireSpaceBeforeBlockStatements": true,
+    // Requires parentheses around immediately invoked function expressions. Boolean
+    "requireParenthesesAroundIIFE": true,
+    // Requires space before and/or after ? or : in conditional expressions. Object or Boolean
+    "requireSpacesInConditionalExpression": {
+        "afterTest": true,
+        "beforeConsequent": true,
+        "afterConsequent": true,
+        "beforeAlternate": true
+    },
+    // Requires space before () or {} in function expressions (both named and anonymous). Object
+    "requireSpacesInFunctionExpression": {
+        "beforeOpeningRoundBrace": true,
+        "beforeOpeningCurlyBrace": true
+    },
+    // Requires space before () or {} in anonymous function expressions. Object
+    "requireSpacesInAnonymousFunctionExpression": {
+        "beforeOpeningRoundBrace": true,
+        "beforeOpeningCurlyBrace": true
+    },
+    // Requires space before () or {} in named function expressions. Object
+    "requireSpacesInNamedFunctionExpression": {
+        "beforeOpeningRoundBrace": true,
+        "beforeOpeningCurlyBrace": true
+    },
+    // Requires space before () or {} in function declarations. Object
+    "requireSpacesInFunctionDeclaration": {
+        "beforeOpeningCurlyBrace": true
+    },
+    // Disallows space before () or {} in function declarations. Object
+    "disallowSpacesInFunctionDeclaration": {
+        "beforeOpeningRoundBrace": true
+    },
+    // Disallows space before () in call expressions. Boolean
+    "disallowSpacesInCallExpression": true,
+    // Disallows multiple var declaration (except for-loop). Boolean or String
+    "disallowMultipleVarDecl": null,
+    // Requires multiple var declaration. Boolean or String
+    "requireMultipleVarDecl": true,
+    // Requires blocks to begin and end with a newline. Boolean or Integer
+    "requireBlocksOnNewline": 1,
+    // Disallows empty blocks (except for catch blocks). Boolean
+    "disallowEmptyBlocks": true,
+    // Disallows space after opening object curly brace and before closing. Boolean or String
+    "disallowSpacesInsideObjectBrackets": true,
+    // Disallows space after opening array square bracket and before closing. Boolean or String
+    "disallowSpacesInsideArrayBrackets": true,
+    // Disallows space after opening round bracket and before closing. Object or Boolean
+    "disallowSpacesInsideParentheses": true,
+    // Disallows quoted keys in object if possible. String or Boolean
+    "disallowQuotedKeysInObjects": null,
+    // Disallows space after object keys. Boolean
+    "disallowSpaceAfterObjectKeys": true,
+    // Requires space after object keys. Boolean
+    "requireSpaceBeforeObjectValues": true,
+    // Requires commas as last token on a line in lists. Boolean
+    "requireCommaBeforeLineBreak": true,
+    // Requires sticking unary operators to the right. Array or Boolean
+    "disallowSpaceAfterPrefixUnaryOperators": true,
+    // Requires sticking unary operators to the left. Array or Boolean
+    "disallowSpaceBeforePostfixUnaryOperators": true,
+    // Requires sticking binary operators to the left. Array or Boolean
+    "disallowSpaceBeforeBinaryOperators": [
+        ","
+    ],
+    // Disallows sticking binary operators to the left. Array or Boolean
+    "requireSpaceBeforeBinaryOperators": true,
+    // Disallows sticking binary operators to the right. Array or Boolean
+    "requireSpaceAfterBinaryOperators": true,
+    // Disallows implicit type conversion. Array
+    "disallowImplicitTypeConversion": [
+        "numeric",
+        "boolean",
+        "binary",
+        "string"
+    ],
+    // Disallows usage of specified keywords. Array
+    "disallowKeywords": [
+        "with"
+    ],
+    // Disallows strings that span multiple lines without using concatenation. Boolean
+    "disallowMultipleLineStrings": true,
+    // Disallows multiple blank lines in a row. Boolean
+    "disallowMultipleLineBreaks": null,
+    // Requires lines to not contain both spaces and tabs consecutively, or spaces after tabs only for alignment if "smart". Boolean or String
+    "disallowMixedSpacesAndTabs": true,
+    // Requires all lines to end on a non-whitespace character. Boolean
+    "disallowTrailingWhitespace": true,
+    // Disallows an extra comma following the final element of an array or object literal. Boolean
+    "disallowTrailingComma": true,
+    // Disallows placing keywords on a new line. Array
+    "disallowKeywordsOnNewLine": [
+        "else",
+        "catch"
+    ],
+    // Requires placing line feed at file end. Boolean
+    "requireLineFeedAtFileEnd": true,
+    // Requires all lines to be at most the number of characters specified. Integer or Object
+    "maximumLineLength": {
+        "value": 120,
+        "allowUrlComments": true,
+        "allowRegex": true
+    },
+    // Requires constructors to be capitalized (except for this). Boolean
+    "requireCapitalizedConstructors": true,
+    // Requires member expressions to use dot notation when possible. Boolean
+    "requireDotNotation": true,
+    // Requires the variable to be the left hand operator when doing a boolean comparison. Boolean
+    "disallowYodaConditions": true,
+    // Requires that a line comment (//) be followed by a space. Boolean or Object or String
+    "requireSpaceAfterLineComment": null,
+    // Disallows newline before opening curly brace of all block statements. Boolean
+    "disallowNewlineBeforeBlockStatements": true,
+    // Option to check line break characters. String
+    "validateLineBreaks": "LF",
+    // Requires all quote marks to be either the supplied value, or consistent if true. tring or Object
+    "validateQuoteMarks": "'",
+    // Validates indentation for switch statements and block statements. Integer or String
+    "validateIndentation": 4,
+    // Enable validation of separators between function parameters. Will ignore newlines. String
+    "validateParameterSeparator": ", ",
+    // Option to check var that = this expressions. Array or String
+    "safeContextKeyword": "that",
+
+    "excludeFiles": [
+        ".bem/**",
+        "app/**",
+        "autobuild_blocks/**",
+        "bower_components/**",
+        "configs/**",
+        "debian/**",
+        "node_modules/**",
+        "pages-desktop/**",
+        "static/**",
+        "**/*.i18n/**",
+        "**/*.deps.js"
+    ],
+
+    "plugins": [
+        "jscs-jsdoc"
+    ],
+
+    "jsDoc": {
+        // Ensures tag names are valid. Boolean or String or {"preset": String, "extra": Object}
+        "checkAnnotations": {
+            "preset": "jsdoc3",
+            "extra": {
+                "override": true
+            }
+        },
+        // Ensures param names in jsdoc and in function declaration are equal. Boolean
+        "checkParamNames": true,
+        // Ensures params in jsdoc contains type. Boolean
+        "requireParamTypes": true,
+        // Reports discrepancies between the claimed in jsdoc and actual type if both exist (code scan). Boolean
+        "checkReturnTypes": true,
+        // Ensures returns in jsdoc contains type. Boolean
+        "requireReturnTypes": true
+    }
+}

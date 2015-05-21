@@ -1,0 +1,23 @@
+{
+    "name": "mongo-wrapper",
+    "version": "0.0.1",
+    "main": "./index.js",
+    "repository": "https://github.com/anton-kotenko/mongo-wrapper",
+    "dependencies": {
+        "mongodb": "1.4.x",
+        "vow": "0.3.9",
+        "tv4": "1.1.9"
+    },
+    "devDependencies": {
+        "mocha": ">=2.1.0",
+        "jshint": "2.7.0",
+        "jscs": "1.12.0",
+        "jscs-jsdoc": "1.0.1"
+    },
+    "engine": {
+        "nodejs": ">=0.10" 
+    },
+    "scripts": {
+        "test": "node_modules/.bin/mocha $(find ./test -type f -iname '*.js')"
+    }
+}

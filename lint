@@ -1,0 +1,3 @@
+#!/bin/bash
+node_modules/.bin/jshint --config=./.jshintrc index.js  $(find ./{test,lib} -type f -iname '*.js')
+node_modules/.bin/jscs --config=./.jscsrc index.js $(find ./{test,lib} -type f -iname '*.js')
