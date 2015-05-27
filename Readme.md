@@ -1,4 +1,4 @@
-# mongo-wrapper
+# shema-check-mongo-wrapper
 Wrapper around [native mongodb javascript driver](https://github.com/mongodb/node-mongodb-native), that provides promise based (using [Vow promises](https://github.com/dfilatov/vow)) interface and data validation with [json schemas](http://json-schema.org/).
 
 Library interface is build to be as close as possible to [mongo shell](http://docs.mongodb.org/master/reference/method/). All asyncronous code is hidden in library, except, actually operation on server and/or recieving data.
