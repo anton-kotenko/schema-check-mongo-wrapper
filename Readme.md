@@ -1,16 +1,22 @@
-# shema-check-mongo-wrapper
+# schema-check-mongo-wrapper
 Wrapper around [native mongodb javascript driver](https://github.com/mongodb/node-mongodb-native), that provides promise based (using [Vow promises](https://github.com/dfilatov/vow)) interface and data validation with [json schemas](http://json-schema.org/).
 
 Library interface is build to be as close as possible to [mongo shell](http://docs.mongodb.org/master/reference/method/). All asyncronous code is hidden in library, except, actually operation on server and/or recieving data.
 
-<img src="https://travis-ci.org/anton-kotenko/mongo-wrapper.svg?branch=master"/>
+<img src="https://travis-ci.org/anton-kotenko/schema-check-mongo-wrapper.svg?branch=master"/>
 
 ##Installation
-```npm install git://github.com/anton-kotenko/mongo-wrapper.git ```
+run
+
+```npm install git://github.com/anton-kotenko/schema-check-mongo-wrapper.git```
+
+or 
+
+```npm install schema-check-mongo-wrapper```
 
 or add
 ```json
- "mongo-wrapper": "git://github.com/anton-kotenko/mongo-wrapper.git"
+ "schema-check-mongo-wrapper": ">=0.1.0"
 ```
 in package.json
 
@@ -27,7 +33,7 @@ Connection class is analog of native mongo driver's [Db](http://mongodb.github.i
 * collection (collectionName)
 
 ```javascript
-var MongoWrapper = require('./mongo-wrapper'),
+var MongoWrapper = require('schema-check-mongo-wrapper'),
    connection = new MongoWrapper.Connection("mongodb://localhost:27017/testdb"),
    collection = connection.collection("myCollection");
 ```
@@ -68,7 +74,7 @@ Has next interface
 
 Simple example: connect to database server and run some commands on collection
 ```javascript
-var MongoWrapper = require('./mongo-wrapper'),
+var MongoWrapper = require('schema-check-mongo-wrapper'),
     connection = new MongoWrapper.Connection("mongodb://localhost:27017/testdb"),
     collection = connection.collection("myCollection");
 
@@ -103,7 +109,7 @@ collection.insert({field: 123})
 
 Example how to store data in mongo's collection with validation
 ```javascript
-var MongoWrapper = require('./mongo-wrapper'),
+var MongoWrapper = require('schema-check-mongo-wrapper'),
     connection = new MongoWrapper.Connection("mongodb://localhost:27017/testdb"),
     collection = connection.collection("myCollection");
     //declare schema for object with two fields a (string) and b (integer),
@@ -165,7 +171,7 @@ collection.insert({field: 123})
 ### Example validate data using complex schemas
 
 ```javascript
-var MongoWrapper = require('./mongo-wrapper'),
+var MongoWrapper = require('schema-check-mongo-wrapper'),
     connection = new MongoWrapper.Connection("mongodb://localhost:27017/testdb"),
     collection;
 

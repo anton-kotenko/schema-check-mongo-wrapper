@@ -1,5 +1,5 @@
 {
-    "name": "shema-check-mongo-wrapper",
+    "name": "schema-check-mongo-wrapper",
     "version": "0.1.0",
     "main": "./index.js",
     "repository": "https://github.com/anton-kotenko/shema-check-mongo-wrapper",
@@ -17,6 +17,9 @@
     "engine": {
         "nodejs": ">=0.10" 
     },
+    "keywords": [
+        "mongodb", "json-schema", "promise", "Vow"   
+    ],
     "scripts": {
         "test": "node_modules/.bin/mocha $(find ./test -type f -iname '*.js')"
     }
