@@ -16,7 +16,7 @@ or
 
 or add
 ```json
- "schema-check-mongo-wrapper": ">=0.1.0"
+"schema-check-mongo-wrapper": ">=0.1.0"
 ```
 in package.json
 
