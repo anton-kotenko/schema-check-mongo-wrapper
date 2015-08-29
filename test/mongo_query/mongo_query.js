@@ -56,7 +56,7 @@ describe('MongoQuery', function () {
             assert.strictEqual(true, query._isPlainObject({a: 123}));
             assert.strictEqual(true, query._isPlainObject({b: {}}));
         });
-        it('shuld return true when argument is just plain object', function () {
+        it('should return false when argument is not plain object', function () {
             var query = new MongoQuery();
             assert.strictEqual(false, query._isPlainObject());
             assert.strictEqual(false, query._isPlainObject(undefined));
@@ -70,6 +70,7 @@ describe('MongoQuery', function () {
             assert.strictEqual(false, query._isPlainObject(MongoWrapper.ObjectID()));
             assert.strictEqual(false, query._isPlainObject([]));
             assert.strictEqual(false, query._isPlainObject([1, 2, 3]));
+            assert.strictEqual(false, query._isPlainObject(new (function () {}) ()));
         });
     });
 
@@ -290,6 +291,15 @@ describe('MongoQuery', function () {
             assert.strictEqual(false, query._matchFieldCondition('a', {}, {a: 1}));
             assert.strictEqual(true, query._matchFieldCondition('a', {}, {a: {}}));
         });
+
+        it('should correctly handle condition with object containing value', function () {
+            var query = new MongoQuery();
+            assert.strictEqual(true, query._matchFieldCondition('a', {b: 123}, {a: {b:123}}));
+            assert.strictEqual(false, query._matchFieldCondition('a', {b: 123}, {a: {b:123, c: 555}}));
+            assert.strictEqual(false, query._matchFieldCondition('a', {b: 123}, {a: 5}));
+            assert.strictEqual(false, query._matchFieldCondition('a', {b: 123}, {a: {c: 5}}));
+        });
+
 
         it('should verify apply operator check', function () {
             var query = new MongoQuery();
