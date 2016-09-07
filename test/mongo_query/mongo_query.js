@@ -294,8 +294,8 @@ describe('MongoQuery', function () {
 
         it('should correctly handle condition with object containing value', function () {
             var query = new MongoQuery();
-            assert.strictEqual(true, query._matchFieldCondition('a', {b: 123}, {a: {b:123}}));
-            assert.strictEqual(false, query._matchFieldCondition('a', {b: 123}, {a: {b:123, c: 555}}));
+            assert.strictEqual(true, query._matchFieldCondition('a', {b: 123}, {a: {b: 123}}));
+            assert.strictEqual(false, query._matchFieldCondition('a', {b: 123}, {a: {b: 123, c: 555}}));
             assert.strictEqual(false, query._matchFieldCondition('a', {b: 123}, {a: 5}));
             assert.strictEqual(false, query._matchFieldCondition('a', {b: 123}, {a: {c: 5}}));
         });

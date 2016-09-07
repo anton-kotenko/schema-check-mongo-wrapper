@@ -92,7 +92,7 @@ describe('Connection', function () {
                 TestTools.getCollectionName(),
                 TestTools.getSchema(),
                 {
-                    enforceChecks: false 
+                    enforceChecks: false
                 }
             );
             assert(collection._schema);
