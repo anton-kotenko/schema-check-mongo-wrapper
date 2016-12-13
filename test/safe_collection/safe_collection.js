@@ -27,7 +27,7 @@ describe('SafeCollection', function () {
         assert(collection._schema);
         assert.strictEqual(collection._enforceChecks, true);
         assert.strictEqual(collection._warningsEnabled, false);
-    
+
         MongoWrapper.SchemaStorage.addSchema('http://my.schema.uri', TestTools.getSchema());
         collection = new SafeCollection(connection, TestTools.getCollectionName(), 'http://my.schema.uri');
         assert(collection._schema);
@@ -49,7 +49,7 @@ describe('SafeCollection', function () {
             TestTools.getCollectionName(),
             TestTools.getSchema(),
             {
-                enforceChecks: false 
+                enforceChecks: false
             }
         );
 

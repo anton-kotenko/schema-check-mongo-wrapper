@@ -1,11 +1,11 @@
 {
     "name": "schema-check-mongo-wrapper",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "main": "./index.js",
     "repository": "https://github.com/anton-kotenko/shema-check-mongo-wrapper",
     "dependencies": {
-        "mongodb": "1.4.x",
-        "vow": "0.3.9",
+        "mongodb": "2.2",
+        "vow": "git://github.com/anton-kotenko/vow#42baf07fc8ca30865fc3b6f4a1b110ffe6635088",
         "tv4": "1.1.9"
     },
     "devDependencies": {
